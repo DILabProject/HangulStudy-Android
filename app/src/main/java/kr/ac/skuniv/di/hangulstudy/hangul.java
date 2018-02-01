@@ -31,9 +31,10 @@ public class hangul extends Fragment {
     DrawLine drawLine;
     RelativeLayout parentLayout;
     Gson gson;
+
     int id = 1;
     int blackBlockSize = 100;
-    int clearBlockSize = 300;
+    int clearBlockSize = 200;
 
     int x1;
     int x2;
@@ -48,6 +49,10 @@ public class hangul extends Fragment {
     JsonObject jsonobj1 = new JsonObject();
     JsonObject jsonobj2 = new JsonObject();
     JsonObject jsono = new JsonObject();
+    ScalableLayout sl;
+    ScalableLayout sl1;
+    ScalableLayout sl2;
+    SharedMemory sharedMemory;
     public hangul()
     {
     }
@@ -55,6 +60,8 @@ public class hangul extends Fragment {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        sharedMemory = SharedMemory.getinstance();
         gson = new Gson();
         jsonobj.addProperty("x1","0");
         jsonobj.addProperty("y1","0");
@@ -107,41 +114,14 @@ public class hangul extends Fragment {
     {   View view = inflater.inflate(R.layout.fragment_hangul,null);
 
         parentLayout = view.findViewById(R.id.parent);
-        final ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
-
-        viewTreeObserver.addOnWindowFocusChangeListener(new ViewTreeObserver.OnWindowFocusChangeListener() {
-            @Override
-            public void onWindowFocusChanged(final boolean hasFocus) {
-                //hasFocus : 앱이 화면에 보여졌을때 true로 설정되어 호출됨.
-                //만약 그리기 뷰 전역변수에 값이 없을경우 전역변수를 초기화 시킴.
-                if(hasFocus && drawLine == null)
-                {
-                    //그리기 뷰가 보여질(나타날) 레이아웃 찾기..
-                    if(parentLayout != null) //그리기 뷰가 보여질 레이아웃이 있으면...
-                    {
-                        //그리기 뷰 레이아웃의 넓이와 높이를 찾아서 Rect 변수 생성.
-                        Rect rect = new Rect(0, 0, parentLayout.getMeasuredWidth(), parentLayout.getMeasuredHeight());
-
-                        //그리기 뷰 초기화..
-                        drawLine = new DrawLine( getActivity(), rect);
-
-                        //그리기 뷰를 그리기 뷰 레이아웃에 넣기 -- 이렇게 하면 그리기 뷰가 화면에 보여지게 됨.
-                        parentLayout.addView(drawLine);
-                    }
-                    if(drawLine != null) drawLine.setLineColor(Color.BLACK);
-                }
-//                super.onWindowFocusChanged(hasFocus);
-            }
-        });
-
-//        PaintWord(jsonarr,cho);
-//        PaintWord(jsonarr1,jung);
-//        PaintWord(jsonarr2,jong);
+        parentLayout.setOnTouchListener(tListener);
+        parentLayout.setOnDragListener(dListener);
 
 
-        ScalableLayout sl = new ScalableLayout(getActivity(),400,450);
-        ScalableLayout sl1 = new ScalableLayout(getActivity(),300,450);
-        ScalableLayout sl2 = new ScalableLayout(getActivity(),700,250);
+
+        sl = new ScalableLayout(getActivity(),400,450);
+        sl1 = new ScalableLayout(getActivity(),300,450);
+        sl2 = new ScalableLayout(getActivity(),700,250);
         ScalableLayout lastSL = new ScalableLayout(getActivity(),700,700);
         PaintWord(jsonarr,sl);
         PaintWord(jsonarr1,sl1);
@@ -151,10 +131,6 @@ public class hangul extends Fragment {
 
         lastSL.addView(sl2,0,450,700,250);
     parentLayout.addView(lastSL);
-//        ImageView iv = new ImageView(getActivity());
-//        iv.setBackgroundResource(R.drawable.b);
-//        cho.addView(iv,100,100,blackBlockSize,blackBlockSize);
-//        Log.d("asdf","asdf");
         return view;
     }
 
@@ -172,15 +148,15 @@ public class hangul extends Fragment {
             parentLayout.getGlobalVisibleRect(l);
 
             if ((int) view.getId() < 100) {         //10 이란 숫자는 그려진 최대 id값
-                x = x + location[0];                // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 왼쪽마진값을 더한다
+                x = x + location[0]-l.left;                // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 왼쪽마진값을 더한다
                 y = y +location[1] -l.top;          // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 위쪽마진 값을 더한다
             }
             switch (motionEvent.getAction()& MotionEvent.ACTION_MASK){
                 case MotionEvent.ACTION_DOWN: {
-                    drawLine.oldX = x;
-                    drawLine.oldY = y;
-                    drawLine.path.reset();
-                    drawLine.path.moveTo(x, y);
+                    sharedMemory.getDrawLine().oldX = x;
+                    sharedMemory.getDrawLine().oldY = y;
+                    sharedMemory.getDrawLine().path.reset();
+                    sharedMemory.getDrawLine().path.moveTo(x, y);
 
                     ClipData.Item item = new ClipData.Item(
                             (CharSequence) view.getTag());
@@ -218,10 +194,8 @@ public class hangul extends Fragment {
             parentLayout.getGlobalVisibleRect(l);
 
             if ((int) view.getId() < 100) {         //10 이란 숫자는 그려진 최대 id값
-//                x = x + location[0];                // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 왼쪽마진값을 더한다
-//                y = y + location[1] - l.top;           // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 위쪽마진 값을 더한다
-                x+=view.getX();
-                y+=view.getY();
+                x = x + location[0]-l.left;                // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 왼쪽마진값을 더한다
+                y = y + location[1] - l.top;           // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 위쪽마진 값을 더한다
             }
 
             switch (dragEvent.getAction()) {
@@ -237,27 +211,28 @@ public class hangul extends Fragment {
 
                 case DragEvent.ACTION_DRAG_LOCATION:
                     Log.d("aa",String.valueOf(dragEvent.getX()));
-                    Log.d("ab",String.valueOf(view.getX()));
+                    Log.d("ab",String.valueOf(x));
+                    Log.d("ac",String.valueOf(l.left));
                     //포인트가 이동될때 마다 두 좌표(이전에눌렀던 좌표와 현재 이동한 좌료)간의 간격을 구한다.
-                    float dx = Math.abs(x - drawLine.oldX);
-                    float dy = Math.abs(y - drawLine.oldY);
+                    float dx = Math.abs(x - sharedMemory.getDrawLine().oldX);
+                    float dy = Math.abs(y - sharedMemory.getDrawLine().oldY);
                     //두 좌표간의 간격이 4px이상이면 (가로든, 세로든) 그리기 bitmap에 선을 그린다.
                     if (dx >= 4 || dy >= 4) {
                         //path에 좌표의 이동 상황을 넣는다. 이전 좌표에서 신규 좌표로..
                         //lineTo를 쓸수 있지만.. 좀더 부드럽게 보이기 위해서 quadTo를 사용함.
-                        drawLine.path.quadTo(drawLine.oldX, drawLine.oldY, x, y);
+                        sharedMemory.getDrawLine().path.quadTo(sharedMemory.getDrawLine().oldX, sharedMemory.getDrawLine().oldY, x, y);
                         //포인터의 마지막 위치값을 기억한다.
-                        drawLine.oldX = x;
-                        drawLine.oldY = y;
+                        sharedMemory.getDrawLine().oldX = x;
+                        sharedMemory.getDrawLine().oldY = y;
                         //그리기 bitmap에 path를 따라서 선을 그린다.
-                        drawLine.canvas.drawPath(drawLine.path, drawLine.paint);
+                        sharedMemory.getDrawLine().canvas.drawPath(sharedMemory.getDrawLine().path, sharedMemory.getDrawLine().paint);
                     }
                     //화면을 갱신시킴... 이 함수가 호출 되면 onDraw 함수가 실행됨.
-                    drawLine.invalidate();
+                    sharedMemory.getDrawLine().invalidate();
                     return true;
                 case DragEvent.ACTION_DROP:
-//                    stack.push(drawLine.path);
-                    drawLine.path = new Path();
+                    sharedMemory.getStack().push(sharedMemory.getDrawLine().path);
+                    sharedMemory.getDrawLine().path = new Path();
                     return true;
             }
             return true;
@@ -289,7 +264,7 @@ public class hangul extends Fragment {
                 id++;
                 iv1.setOnTouchListener(tListener);
                 iv1.setOnDragListener(dListener);
-                iv1.setBackgroundResource(R.drawable.a1); // 이미지뷰 이미지지정 : 투명블럭(글자의 정답체크를 위한 투명 이미지)
+                iv1.setBackgroundResource(R.drawable.b1); // 이미지뷰 이미지지정 : 투명블럭(글자의 정답체크를 위한 투명 이미지)
                 iv.setBackgroundResource(R.drawable.b); //이미지뷰 이미지지정 :  글자블럭
 
                 //글자블럭 param 설정

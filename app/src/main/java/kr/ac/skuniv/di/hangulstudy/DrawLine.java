@@ -8,11 +8,13 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.View;
 
+import java.io.Serializable;
+
 /**
  * Created by namgiwon on 2018. 1. 5..
  */
 
-public class DrawLine extends View
+public class DrawLine extends View implements Serializable
 {
     //현재 그리기 조건(색상, 굵기, 등등.)을 기억 하는 변수.
     public Paint paint = null;

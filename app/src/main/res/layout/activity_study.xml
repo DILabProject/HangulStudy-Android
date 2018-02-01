@@ -26,6 +26,16 @@
             android:layout_height="match_parent"
             android:layout_weight="1"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="150dp"
+            android:text="간"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"/>
 
 
         <RelativeLayout
@@ -37,8 +47,22 @@
         </RelativeLayout>
 
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/study_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="reset"/>
+
+        <Button
+            android:id="@+id/study_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="back"/>
 
 
-
-
+    </LinearLayout>
 </LinearLayout>

@@ -21,10 +21,11 @@ public class MainActivity extends FragmentActivity {
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(!isStart){
-                startActivity(startstudy);
-                finish();
-                isStart=true;}
+                if(isStart==false){
+                    isStart=true;
+                    startActivity(startstudy);
+                  finish();
+                }
             }
         }, 3000);
 
