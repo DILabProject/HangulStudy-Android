@@ -8,22 +8,21 @@ import android.util.Log;
 import android.view.Window;
 
 public class MainActivity extends FragmentActivity {
-    Intent startstudy;
-    boolean isStart = false;
+    Intent studylist;
+     boolean  isStart = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-        startstudy = new Intent(this,StudyActivity.class);
-
+        studylist = new Intent(this,StudyListActivity.class);
         Handler mHandler = new Handler();
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if(isStart==false){
                     isStart=true;
-                    startActivity(startstudy);
+                    startActivity(studylist);
                   finish();
                 }
             }

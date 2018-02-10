@@ -27,7 +27,7 @@ import kr.ac.skuniv.di.hangulstudy.VO.PointVO;
  * Created by namgiwon on 2018. 1. 30..
  */
 
-public class hangul extends Fragment {
+public class hangul2 extends Fragment {
     DrawLine drawLine;
     RelativeLayout parentLayout;
     Gson gson;
@@ -53,7 +53,7 @@ public class hangul extends Fragment {
     ScalableLayout sl1;
     ScalableLayout sl2;
     SharedMemory sharedMemory;
-    public hangul()
+    public hangul2()
     {
     }
     @Override
@@ -64,72 +64,62 @@ public class hangul extends Fragment {
         sharedMemory = SharedMemory.getinstance();
         gson = new Gson();
         jsonobj.addProperty("x1","0");
-        jsonobj.addProperty("y1","0");
-        jsonobj.addProperty("x2","200");
-        jsonobj.addProperty("y2","0");
-        jsonarr.add(jsonobj);
-        jsonobj = new JsonObject();
-        jsonobj.addProperty("x1","200");
         jsonobj.addProperty("y1","100");
         jsonobj.addProperty("x2","200");
+        jsonobj.addProperty("y2","100");
+        jsonarr.add(jsonobj);
+        jsonobj = new JsonObject();
+        jsonobj.addProperty("x1","0");
+        jsonobj.addProperty("y1","200");
+        jsonobj.addProperty("x2","0");
         jsonobj.addProperty("y2","400");
         jsonarr.add(jsonobj);
         jsonobj = new JsonObject();
+        jsonobj.addProperty("x1","0");
+        jsonobj.addProperty("y1","500");
+        jsonobj.addProperty("x2","200");
+        jsonobj.addProperty("y2","500");
+        jsonarr.add(jsonobj);
+        jsonobj = new JsonObject();
 
         jsonobj1.addProperty("x1","0");
-        jsonobj1.addProperty("y1","0");
+        jsonobj1.addProperty("y1","100");
         jsonobj1.addProperty("x2","0");
-        jsonobj1.addProperty("y2","400");
+        jsonobj1.addProperty("y2","500");
         jsonarr1.add(jsonobj1);
         jsonobj1 = new JsonObject();
 
         jsonobj1.addProperty("x1","0");
-        jsonobj1.addProperty("y1","200");
+        jsonobj1.addProperty("y1","300");
         jsonobj1.addProperty("x2","100");
-        jsonobj1.addProperty("y2","200");
+        jsonobj1.addProperty("y2","300");
         jsonarr1.add(jsonobj1);
         jsonobj1 = new JsonObject();
 
-
-        jsonobj2.addProperty("x1","100");
-        jsonobj2.addProperty("y1","50");
-        jsonobj2.addProperty("x2","100");
-        jsonobj2.addProperty("y2","150");
-        jsonarr2.add(jsonobj2);
-        jsonobj2 = new JsonObject();
-
-        jsonobj2.addProperty("x1","200");
-        jsonobj2.addProperty("y1","150");
-        jsonobj2.addProperty("x2","500");
-        jsonobj2.addProperty("y2","150");
-        jsonarr2.add(jsonobj2);
-        jsonobj2 = new JsonObject();
 
         jsono.add("cho", jsonarr);
         jsono.add("jung", jsonarr1);
-        jsono.add("jong", jsonarr2);
+
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {   View view = inflater.inflate(R.layout.fragment_hangul,null);
+    {   View view = inflater.inflate(R.layout.fragment_hangul2,null);
 
-        parentLayout = view.findViewById(R.id.parent);
+        parentLayout = view.findViewById(R.id.hangul2_parent);
         parentLayout.setOnTouchListener(tListener);
         parentLayout.setOnDragListener(dListener);
 
 
 
-        sl = new ScalableLayout(getActivity(),400,450);
-        sl1 = new ScalableLayout(getActivity(),300,450);
-        sl2 = new ScalableLayout(getActivity(),700,250);
+        sl = new ScalableLayout(getActivity(),400,700);
+        sl1 = new ScalableLayout(getActivity(),300,700);
+
         ScalableLayout lastSL = new ScalableLayout(getActivity(),700,700);
         PaintWord(jsonarr,sl);
         PaintWord(jsonarr1,sl1);
-        PaintWord(jsonarr2,sl2);
-        lastSL.addView(sl,0,0,400,450);
-        lastSL.addView(sl1,400,0,300,450);
+        lastSL.addView(sl,0,0,400,700);
+        lastSL.addView(sl1,400,0,300,700);
 
-        lastSL.addView(sl2,0,450,700,250);
     parentLayout.addView(lastSL);
         return view;
     }

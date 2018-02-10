@@ -5,13 +5,16 @@ import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.LinkedList;
 
@@ -22,19 +25,25 @@ import java.util.LinkedList;
 public class StudyActivity extends FragmentActivity{
     SharedMemory sharedMemory;
     RelativeLayout hangulja;
-    hangul hangul;
 
+    Fragment hangul;
+    hangul2 hangul2;
+    String str = "간다";
     private DrawLine drawLine = null; // 선그리기 뷰 객체
     Button reset;
     Button back;
-
+    Button previous;
+    Button next;
+    int now=0;
+    TextView preview;
+    TextView pullstring;
+    FragmentManager fragmentManager;
+    FragmentTransaction fragmentTransaction;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_study);
-
-
 
         sharedMemory = SharedMemory.getinstance();
 
@@ -42,22 +51,29 @@ public class StudyActivity extends FragmentActivity{
         reset.setOnClickListener(bListener);
         back = (Button) findViewById(R.id.study_back);
         back.setOnClickListener(bListener);
-
+        previous = (Button) findViewById(R.id.study_previous);
+        previous.setOnClickListener(bListener);
+        next = (Button) findViewById(R.id.study_next);
+        next.setOnClickListener(bListener);
+        preview = (TextView) findViewById(R.id.study_preview);
+        pullstring = (TextView) findViewById(R.id.study_pullstring);
+        pullstring.setText(str);
         hangulja = (RelativeLayout) findViewById(R.id.main_hangulja);
-//        hangulja.setOnTouchListener(tListener);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
+        //fragment들 생성
         hangul = new hangul();
+        hangul2 = new hangul2();
+        //fragment 관리자 선언
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
 
-
-        Bundle bundle = new Bundle(1); // 파라미터는 전달할 데이터 수
-        bundle.putSerializable("drawLine",drawLine);
-        hangul.setArguments(bundle);
-
+        //fragment전환
         fragmentTransaction.replace(R.id.main_hangulja, hangul);
         fragmentTransaction.commitNow();
+
+        //=======================인텐트 받은 글자 파싱
+        preview.setText(String.valueOf(str.charAt(now)));
 
     }
 
@@ -81,10 +97,34 @@ public class StudyActivity extends FragmentActivity{
                     }
                     drawLine.invalidate();
                     break;
+                case R.id.study_next:
+                    if(now < str.length()-1){
+                        now++;
+                        preview.setText(String.valueOf(str.charAt(now)));
+                        hangul = new hangul2();
+                        fragmentManager = getSupportFragmentManager();
+                        fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.main_hangulja, hangul);
+                        fragmentTransaction.commitNow();
+                        renewDrawLine();
+                    }
+                    break;
+                case R.id.study_previous:
+                    if(now != 0 ){
+                        now--;
+                        preview.setText(String.valueOf(str.charAt(now)));
+                        hangul = new hangul();
+                        //fragment전환
+                        fragmentManager = getSupportFragmentManager();
+                        fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.main_hangulja, hangul);
+                        fragmentTransaction.commitNow();
+                        renewDrawLine();
+                    }
+                    break;
             }
         }
     };
-
 
 //
     @Override
@@ -111,5 +151,27 @@ public class StudyActivity extends FragmentActivity{
         super.onWindowFocusChanged(hasFocus);
     }
 
+
+    private void renewDrawLine(){
+        hangulja = (RelativeLayout) findViewById(R.id.main_hangulja);
+        hangulja.removeView(drawLine);
+        //그리기 뷰가 보여질(나타날) 레이아웃 찾기..
+        if(hangulja != null) //그리기 뷰가 보여질 레이아웃이 있으면...
+        {
+            //그리기 뷰 레이아웃의 넓이와 높이를 찾아서 Rect 변수 생성.
+            Rect rect = new Rect(0, 0,
+                    hangulja.getMeasuredWidth(), hangulja.getMeasuredHeight());
+            //그리기 뷰 초기화..
+            drawLine = new DrawLine(  this, rect);
+            sharedMemory.setDrawLine(drawLine);
+            //그리기 뷰를 그리기 뷰 레이아웃에 넣기 -- 이렇게 하면 그리기 뷰가 화면에 보여지게 됨.
+            hangulja.addView(drawLine);
+        }
+        if(drawLine != null) drawLine.setLineColor(Color.BLACK);
+        drawLine.setLineColor(Color.BLACK);
+        drawLine.canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        sharedMemory.setStack(new LinkedList<Path>());
+        drawLine.invalidate();
+    }
 
 }

@@ -1,4 +1,4 @@
-package kr.ac.skuniv.di.hangulstudy;
+package kr.ac.skuniv.di.hangulstudy.VO;
 
 /**
  * Created by namgiwon on 2018. 1. 9..
