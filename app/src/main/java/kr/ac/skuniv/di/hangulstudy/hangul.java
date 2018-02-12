@@ -1,5 +1,5 @@
 package kr.ac.skuniv.di.hangulstudy;
-
+//master
 
 import android.content.ClipData;
 import android.content.ClipDescription;
