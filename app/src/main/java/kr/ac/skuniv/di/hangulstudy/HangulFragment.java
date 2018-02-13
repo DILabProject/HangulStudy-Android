@@ -27,7 +27,7 @@ import kr.ac.skuniv.di.hangulstudy.VO.PointVO;
  * Created by namgiwon on 2018. 1. 30..
  */
 
-public class hangul extends Fragment {
+public class HangulFragment extends Fragment {
     DrawLine drawLine;
     RelativeLayout parentLayout;
     Gson gson;
@@ -53,7 +53,7 @@ public class hangul extends Fragment {
     ScalableLayout sl1;
     ScalableLayout sl2;
     SharedMemory sharedMemory;
-    public hangul()
+    public HangulFragment()
     {
     }
     @Override

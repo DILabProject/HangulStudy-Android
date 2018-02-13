@@ -9,13 +9,15 @@ import android.view.Window;
 
 public class MainActivity extends FragmentActivity {
     Intent studylist;
-     boolean  isStart = false;
+     static boolean isStart;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         studylist = new Intent(this,StudyListActivity.class);
+
+        isStart = false;
         Handler mHandler = new Handler();
         mHandler.postDelayed(new Runnable() {
             @Override

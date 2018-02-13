@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -62,7 +61,7 @@ public class StudyActivity extends FragmentActivity{
 
 
         //fragment들 생성
-        hangul = new hangul();
+        hangul = new HangulFragment();
         hangul2 = new hangul2();
         //fragment 관리자 선언
         fragmentManager = getSupportFragmentManager();
@@ -113,7 +112,7 @@ public class StudyActivity extends FragmentActivity{
                     if(now != 0 ){
                         now--;
                         preview.setText(String.valueOf(str.charAt(now)));
-                        hangul = new hangul();
+                        hangul = new HangulFragment();
                         //fragment전환
                         fragmentManager = getSupportFragmentManager();
                         fragmentTransaction = fragmentManager.beginTransaction();
