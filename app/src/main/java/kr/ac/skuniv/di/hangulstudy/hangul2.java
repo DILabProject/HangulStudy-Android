@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.ssomai.android.scalablelayout.ScalableLayout;
 
 import kr.ac.skuniv.di.hangulstudy.VO.PointVO;
+import kr.ac.skuniv.di.hangulstudy.sharedmemory.SharedMemory;
 
 /**
  * Created by namgiwon on 2018. 1. 30..

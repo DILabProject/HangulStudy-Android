@@ -1,8 +1,10 @@
-package kr.ac.skuniv.di.hangulstudy;
+package kr.ac.skuniv.di.hangulstudy.sharedmemory;
 
 import android.graphics.Path;
 
 import java.util.LinkedList;
+
+import kr.ac.skuniv.di.hangulstudy.DrawLine;
 
 /**
  * Created by namgiwon on 2017. 11. 17..
