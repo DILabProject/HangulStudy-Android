@@ -5,7 +5,6 @@ import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -17,6 +16,8 @@ import android.widget.TextView;
 
 import java.util.LinkedList;
 
+import kr.ac.skuniv.di.hangulstudy.sharedmemory.SharedMemory;
+
 /**
  * Created by namgiwon on 2018. 1. 31..
  */
@@ -25,7 +26,7 @@ public class StudyActivity extends FragmentActivity{
     SharedMemory sharedMemory;
     RelativeLayout hangulja;
 
-    Fragment hangul;
+    HangulFragment hangul;
     hangul2 hangul2;
     String str = "간다";
     private DrawLine drawLine = null; // 선그리기 뷰 객체
@@ -33,6 +34,7 @@ public class StudyActivity extends FragmentActivity{
     Button back;
     Button previous;
     Button next;
+    Button daum;
     int now=0;
     TextView preview;
     TextView pullstring;
@@ -59,6 +61,8 @@ public class StudyActivity extends FragmentActivity{
         pullstring.setText(str);
         hangulja = (RelativeLayout) findViewById(R.id.main_hangulja);
 
+        daum = (Button) findViewById(R.id.study_daum);
+        daum.setOnClickListener(bListener);
 
         //fragment들 생성
         hangul = new HangulFragment();
@@ -100,7 +104,7 @@ public class StudyActivity extends FragmentActivity{
                     if(now < str.length()-1){
                         now++;
                         preview.setText(String.valueOf(str.charAt(now)));
-                        hangul = new hangul2();
+//                        HangulFragment = new hangul2();
                         fragmentManager = getSupportFragmentManager();
                         fragmentTransaction = fragmentManager.beginTransaction();
                         fragmentTransaction.replace(R.id.main_hangulja, hangul);
@@ -121,11 +125,14 @@ public class StudyActivity extends FragmentActivity{
                         renewDrawLine();
                     }
                     break;
+                case R.id.study_daum:
+                    hangul.PaintGuideLine(hangul.jsonarr,hangul.sl);
+                    break;
             }
         }
     };
 
-//
+    //
     @Override
     public void onWindowFocusChanged(boolean hasFocus)
     {
