@@ -20,12 +20,17 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ssomai.android.scalablelayout.ScalableLayout;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 
+import kr.ac.skuniv.di.hangulstudy.VO.HangulVO;
 import kr.ac.skuniv.di.hangulstudy.VO.PointVO;
 import kr.ac.skuniv.di.hangulstudy.sharedmemory.SharedMemory;
 
@@ -38,140 +43,78 @@ public class HangulFragment extends Fragment {
     DrawLine drawLine;
     RelativeLayout parentLayout;
     Gson gson;
-    int backgroundid =1000;
-    int id = 1;
-    int blackBlockSize = 100;
-    int clearBlockSize = 200;
-
-    int x1;
-    int x2;
-    int y1;
-    int y2;
+    LinkedList<Path> paintStack;
+    private int backgroundid =1000;
+    private int id = 1;
+    private int blackBlockSize = 100; //글자 사이즈
+    private int clearBlockSize = 200; //가이드라인 사이즈
+    private int backgroundSize = 10;
     ArrayList<View> GuideLine = new ArrayList<View>();
-    ArrayList<Integer> CheckIDList = new ArrayList<Integer>();
-    JsonArray jsonarr = new JsonArray();
-    JsonArray jsonarr1 = new JsonArray();
-    JsonArray jsonarr2 = new JsonArray();
+    ArrayList<Integer> CheckIDList = new ArrayList<Integer>();  //한 획을 그리면서 지나간 view들의 id를 담는 ArrayList
 
-    JsonObject jsonobj = new JsonObject();
-    JsonObject jsonobj1 = new JsonObject();
-    JsonObject jsonobj2 = new JsonObject();
-    JsonObject jsono = new JsonObject();
-    ScalableLayout sl;
+    //************** 중요! ****************
+    /********Json Array 구조 형식***********
+     fullIfo  - {"word" : wordJsonArr, "stroke" : strokeJsonArr}
+     wordJsonArr - [{"x1" : 1, "y1" : 1, "x2" : 2, "y2" : 2} , {"x1" : 1, "y1" : 1, "x2" : 2, "y2" : 2} ..... 여러개]
+     strokeJsonArr - [{"stroke" : "2,1,1,2"},{"stroke" : "1,2,1,1"} ]
+     *************************************/
+
+    JsonObject fullInfo; // Word 정보, Stroke 정보,  Answer 정보를 담는 JsonObject;
+    JsonArray wordJsonArr ;   // 글자정보 ArrayList
+    JsonArray strokeJsonArr; // 획수정보 ArrayList
+    ScalableLayout word;
     ScalableLayout lastSL;
-    ScalableLayout sl1;
-    ScalableLayout sl2;
+    String strokeArr[];
 
-    String answerCho = "2";
-    String answerJung = "1,1";
-    String answerJong = "2";
-    int a[] = {2,1,1,2};
+    HangulVO hangulVO;
+
     int index = 0;
-    int count = 0;
-
+    int strokeCount = 0;
+    int wordCount =0; // jsonArray에 몇글자가 들어왔는지 체크
     SharedMemory sharedMemory;
-    public HangulFragment()
-    {
-    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
+        paintStack = new LinkedList<Path>();
         sharedMemory = SharedMemory.getinstance();
-        gson = new Gson();
-        jsonobj.addProperty("x1","0");
-        jsonobj.addProperty("y1","0");
-        jsonobj.addProperty("x2","200");
-        jsonobj.addProperty("y2","0");
-        jsonarr.add(jsonobj);
-        jsonobj = new JsonObject();
-        jsonobj.addProperty("x1","200");
-        jsonobj.addProperty("y1","100");
-        jsonobj.addProperty("x2","200");
-        jsonobj.addProperty("y2","300");
-        jsonarr.add(jsonobj);
-        jsonobj = new JsonObject();
-
-        jsonobj1.addProperty("x1","400");
-        jsonobj1.addProperty("y1","0");
-        jsonobj1.addProperty("x2","400");
-        jsonobj1.addProperty("y2","300");
-        jsonarr.add(jsonobj1);
-        jsonobj1 = new JsonObject();
-
-        jsonobj1.addProperty("x1","400");
-        jsonobj1.addProperty("y1","200");
-        jsonobj1.addProperty("x2","500");
-        jsonobj1.addProperty("y2","200");
-        jsonarr.add(jsonobj1);
-        jsonobj1 = new JsonObject();
-
-
-        jsonobj2.addProperty("x1","100");
-        jsonobj2.addProperty("y1","500");
-        jsonobj2.addProperty("x2","100");
-        jsonobj2.addProperty("y2","600");
-        jsonarr.add(jsonobj2);
-        jsonobj2 = new JsonObject();
-
-        jsonobj2.addProperty("x1","200");
-        jsonobj2.addProperty("y1","600");
-        jsonobj2.addProperty("x2","500");
-        jsonobj2.addProperty("y2","600");
-        jsonarr.add(jsonobj2);
-        jsonobj2 = new JsonObject();
-
-
-
-//        jsono.add("cho", jsonarr);
-//        jsono.add("jung", jsonarr1);
-//        jsono.add("jong", jsonarr2);
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {   View view = inflater.inflate(R.layout.fragment_hangul,null);
-
+        gson = new Gson();
         parentLayout = view.findViewById(R.id.parent);
         parentLayout.setOnTouchListener(tListener);
         parentLayout.setOnDragListener(dListener);
         parentLayout.setClickable(false);
 
+        ////// 글자 좌표정보 및 획수정보 를 번들(getArgument)로 받아옴
 
-
-//        sl = new ScalableLayout(getActivity(),400,450);
-//        sl1 = new ScalableLayout(getActivity(),300,450);
-//        sl2 = new ScalableLayout(getActivity(),700,250);
-        sl = new ScalableLayout(getActivity(),700,700);
-        lastSL = new ScalableLayout(getActivity(),700,700);
-//        lastSL.setId(1000);
-        PaintBackground(sl);
-        PaintWord(jsonarr,sl);
-        PaintGuideLine(jsonarr,sl);
-//        PaintWord(jsonarr1,sl1);
-//        PaintWord(jsonarr2,sl2);
-        lastSL.addView(sl,0,0,700,700);
-//        lastSL.addView(sl1,400,0,300,450);
-//        lastSL.addView(sl2,0,450,700,250);
+        hangulVO = gson.fromJson(getArguments().getString("hangulinfo"),HangulVO.class);
+        lastSL = new ScalableLayout(getActivity(),backgroundSize*100,backgroundSize*100);
+        MakeWord(wordJsonArr.get(wordCount).getAsJsonArray());
         parentLayout.addView(lastSL);
         return view;
     }
 
+    /*********
+     터치리스너
+     ********/
     View.OnTouchListener tListener = new View.OnTouchListener(){
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             float x = motionEvent.getX();
             float y = motionEvent.getY();
             int[] location = new int[2];
-
             view.getLocationOnScreen(location);
 
-            Rect l = new Rect();
-            parentLayout.getGlobalVisibleRect(l);
+            Rect rect = new Rect();
+            parentLayout.getGlobalVisibleRect(rect);
 
             if ((int) view.getId() < 2000) {         //10 이란 숫자는 그려진 최대 id값
-                x = x + location[0]-l.left;                // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 왼쪽마진값을 더한다
-                y = y +location[1] -l.top;          // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 위쪽마진 값을 더한다
+                x = x + location[0]-rect.left;                // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 왼쪽마진값을 더한다
+                y = y +location[1] -rect.top;          // 해당 아이디의 절대 좌표를 계산 하기 위하여 좌표에 뷰의 위쪽마진 값을 더한다
             }
             switch (motionEvent.getAction()& MotionEvent.ACTION_MASK){
                 case MotionEvent.ACTION_DOWN: {
@@ -204,12 +147,16 @@ public class HangulFragment extends Fragment {
         }
     };
 
+
+    /*********
+     드래그리스너
+     ********/
     View.OnDragListener dListener = new View.OnDragListener(){
         @Override
         public boolean onDrag(View view, DragEvent dragEvent) {
             float x = dragEvent.getX();
             float y = dragEvent.getY();
-            int[] location = new int[2];
+            int[] location = new int[2]; // 절대좌표 구하기
             view.getLocationOnScreen(location);
             Rect l = new Rect();
             parentLayout.getGlobalVisibleRect(l);
@@ -252,7 +199,7 @@ public class HangulFragment extends Fragment {
                     sharedMemory.getDrawLine().invalidate();
                     return true;
                 case DragEvent.ACTION_DROP:
-                    sharedMemory.getStack().push(sharedMemory.getDrawLine().path);
+                    paintStack.push(sharedMemory.getDrawLine().path);
                     sharedMemory.getDrawLine().path = new Path();
                     boolean isCollect = true; // 획 그리기 성공 체크
                     for(int i =0 ; i<CheckIDList.size();i++){
@@ -270,29 +217,58 @@ public class HangulFragment extends Fragment {
         }
     };
 
+    /*********
+     정답처리 메소드
+     ********/
     public void Collect(){
-        Log.d("index",String.valueOf(index));
-        PaintGuideLine(jsonarr,sl);
-    }
-    public void Fail(){
-        Toast.makeText(getContext(),"다시그려보세요",Toast.LENGTH_LONG).show();
-        sharedMemory.getDrawLine().canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-        if(sharedMemory.getStack().size() > 0 ) sharedMemory.getStack().pop();
-        if(sharedMemory.getStack().size() > 0){
-            for(int i = 0 ; i < sharedMemory.getStack().size(); i++){
-                sharedMemory.getDrawLine().canvas.drawPath(sharedMemory.getStack().get(i),sharedMemory.getDrawLine().paint);
+        Log.d("index",String.valueOf(hangulVO.getStroke().get(wordCount).length()));
+
+        if(index != strokeArr.length){
+            PaintGuideLine(wordJsonArr.get(wordCount).getAsJsonArray(),word);
+        }else{
+            if(wordCount != hangulVO.getWord().size()-1){ //한글자의 마지막 획수까지 완성시킨경우
+                index = 0;
+                strokeCount=0;
+                wordCount++;
+                resetPaint();
+                MakeWord((JsonArray) hangulVO.getWord().get(wordCount));
+            }else{
+                 //하루차 글자를 모두 완성했을경우
             }
         }
-        sharedMemory.getDrawLine().invalidate();
+    }
+    /*********
+     실패처리 메소드
+     ********/
+    public void Fail(){
+        Toast.makeText(getContext(),"다시그려보세요",Toast.LENGTH_LONG).show();
+        backPaint();
     }
 
+    /*********
+     한글자에대한 좌표정보를 받아 글자를 만든 ScalableLayout을 반환하는 메소드
+     즉, 한 글자를 클리어할때마다 이 메소드를 호출하면 글자를 바꿀수 있게 한것이다.
+     lastSl 을 비우고 새글자를 덮어쓴다
+     ********/
+    public void MakeWord(JsonArray jsonarr){
+        strokeArr = hangulVO.getStroke().get(wordCount).split(",");
+        ScalableLayout sl = new ScalableLayout(getActivity(),backgroundSize*100,backgroundSize*100);
+        PaintBackground(sl);
+        PaintWord(jsonarr,sl);
+        PaintGuideLine(jsonarr,sl);
+        word = sl;
+        lastSL.removeAllViews();
+        lastSL.addView(sl,0,0,backgroundSize*100,backgroundSize*100);
+    }
 
+    /*********
+     가이드라인 그리는 메소드
+     ********/
     public void PaintGuideLine(JsonArray jsonarr,ScalableLayout sl){  //정답 가이드라인 나오는곳
         if(GuideLine.size()!=0) {
             Log.d("ff","remove guideline");
             removeGuidLine();}
-
-        for (int i = count; i <count+a[index] ; i++) {
+        for (int i = strokeCount; i <strokeCount+Integer.parseInt(strokeArr[index]) ; i++) {
             JsonObject jsonobj = jsonarr.get(i).getAsJsonObject();
             PointVO point = gson.fromJson(jsonobj,PointVO.class);
             String direct = PaintDirect(point);  // 그려야할 방향이 가로인지 세로인지 리턴값 = vertical or horizontal or round
@@ -325,39 +301,48 @@ public class HangulFragment extends Fragment {
                 }
             }
         }
-        count += a[index];
+        strokeCount += Integer.parseInt(strokeArr[index]);
         index++;
         id = 0;
-        Log.d("count",String.valueOf(count));
-        Log.d("index",String.valueOf(index));
+
     }
 
+    /*********
+     이전 가이드라인을 지우는 메소드
+     ********/
     public void removeGuidLine(){
         for(int i = 0; i<GuideLine.size(); i++){
-            sl.removeView(GuideLine.get(i));
+            word.removeView(GuideLine.get(i));
         }
         GuideLine.clear();
     }
 
-    public void PaintBackground(ScalableLayout sl){
-        for(int i = 0; i < 7;i++){
-            for(int j =0; j<7;j++){
-                ImageView iv2 = new ImageView(getActivity());
+    /*********
+     정답처리를 위한 배경타일을 그리는 메소드
+     ********/
+    public void PaintBackground(ScalableLayout sl){ // 정답처리를 위한 글자밖의 타일들 그리기
+        for(int i = 0; i < backgroundSize;i++){
+            for(int j =0; j<backgroundSize;j++){
+                ImageView backgroundTile = new ImageView(getActivity());
                 int ivTOP=0;
                 int ivLEFT=0;
-                iv2.setId(backgroundid);
+                backgroundTile.setId(backgroundid);
                 backgroundid++;
 //                iv.setOnTouchListener(tListener);
-                iv2.setOnDragListener(dListener);
-                iv2.setBackgroundResource(R.drawable.a1); //이미지뷰 이미지지정 :  글자블럭
+                backgroundTile.setOnDragListener(dListener);
+                backgroundTile.setBackgroundResource(R.drawable.a1); //이미지뷰 이미지지정 :  글자블럭
 
                 //글자블럭 param 설정
                 ivLEFT =i*blackBlockSize;
                 ivTOP = j*blackBlockSize;
-                sl.addView(iv2,ivLEFT,ivTOP,blackBlockSize,blackBlockSize);
+                sl.addView(backgroundTile,ivLEFT,ivTOP,blackBlockSize,blackBlockSize);
             }
         }
     }
+
+    /*********
+     글자를 그리는 메소드
+     ********/
     public void PaintWord(JsonArray jsonarr , ScalableLayout sl){
         for (int i = 0; i < jsonarr.size(); i++) {
             JsonObject jsonobj = jsonarr.get(i).getAsJsonObject();
@@ -368,8 +353,6 @@ public class HangulFragment extends Fragment {
                 ImageView iv = new ImageView(getActivity());
                 int ivTOP=0;
                 int ivLEFT=0;
-//                iv.setOnTouchListener(tListener);
-//                iv.setOnDragListener(dListener);
                 iv.setBackgroundResource(R.drawable.b); //이미지뷰 이미지지정 :  글자블럭
                 //글자블럭 param 설정
                 if(direct.equals("horizontal") ) {
@@ -390,6 +373,21 @@ public class HangulFragment extends Fragment {
         }
     }
 
+    public void resetPaint(){
+        sharedMemory.getDrawLine().canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        paintStack = new LinkedList<Path>();
+        sharedMemory.getDrawLine().invalidate();
+    }
+    public void backPaint(){
+        sharedMemory.getDrawLine().canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        if(paintStack.size() > 0 ) paintStack.pop();
+        if(paintStack.size() > 0){
+            for(int i = 0 ; i < paintStack.size(); i++){
+                sharedMemory.getDrawLine().canvas.drawPath(paintStack.get(i),sharedMemory.getDrawLine().paint);
+            }
+        }
+        sharedMemory.getDrawLine().invalidate();
+    }
     public String PaintDirect(PointVO point){
         if(point.getX1() < point.getX2() && point.getY1() == point.getY2())
             return "horizontal";
@@ -398,61 +396,8 @@ public class HangulFragment extends Fragment {
         else return "round";
     }
 
-//    public void PaintWord(JsonArray jsonarr , RelativeLayout rl){
-//        for (int i = 0; i < jsonarr.size(); i++) {
-//            JsonObject jsonobj = jsonarr.get(i).getAsJsonObject();
-//            PointVO point = gson.fromJson(jsonobj,PointVO.class);
-//            String direct = PaintDirect(point);  // 그려야할 방향이 가로인지 세로인지 리턴값 = vertical or horizontal or round
-//            for(int j = 0;;j++){
-//                Log.d("gg","generate view");
-//                ImageView iv1 = new ImageView(getActivity());
-//                ImageView iv = new ImageView(getActivity());
-//                int ivTOP=0;
-//                int ivLEFT=0;
-//                iv1.setId(id);
-//                iv1.setClickable(true);
-//                id++;
-//                iv1.setOnTouchListener(tListener);
-//                iv1.setOnDragListener(dListener);
-//                iv1.setBackgroundResource(R.drawable.b1); // 이미지뷰 이미지지정 : 투명블럭(글자의 정답체크를 위한 투명 이미지)
-//                iv.setBackgroundResource(R.drawable.b); //이미지뷰 이미지지정 :  글자블럭
-//
-//                //글자블럭 param 설정
-//                if(direct.equals("horizontal") ) {
-//                    ivLEFT =point.getX1()+j*blackBlockSize;
-//                    ivTOP = point.getY1();
-//                }else if(direct.equals("vertical")){
-//                    ivLEFT =point.getX1();
-//                    ivTOP = point.getY1()+j*blackBlockSize;
-//                }
-//
-//                RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-//                        ViewGroup.LayoutParams.WRAP_CONTENT,
-//                        ViewGroup.LayoutParams.WRAP_CONTENT);
-//                lp.width = blackBlockSize;
-//                lp.height = blackBlockSize;
-//                lp.setMargins(ivLEFT,ivTOP,0,0);
-//                iv.setLayoutParams(lp);
-//                rl.addView(iv);
-//
-//                RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams(
-//                        ViewGroup.LayoutParams.WRAP_CONTENT,
-//                        ViewGroup.LayoutParams.WRAP_CONTENT);
-//                lp1.width = clearBlockSize;
-//                lp1.height = clearBlockSize;
-//                lp1.setMargins(ivLEFT-(clearBlockSize-blackBlockSize)/2,ivTOP-(clearBlockSize-blackBlockSize)/2,0,0);
-//                iv1.setLayoutParams(lp1);
-//                rl.addView(iv1);
-////                rl.addView(iv1,ivLEFT-(clearBlockSize-blackBlockSize)/2,ivTOP-(clearBlockSize-blackBlockSize)/2);
-//
-//                if(direct.equals("horizontal") ) {
-//                    if(j == (point.getX2()-point.getX1())/blackBlockSize) break;
-//                }else if(direct.equals("vertical")){
-//                    if(j == ((point.getY2()-point.getY1())/blackBlockSize)) break;
-//                }
-//            }
-//        }
-//    }
+
+
 
 
 }
