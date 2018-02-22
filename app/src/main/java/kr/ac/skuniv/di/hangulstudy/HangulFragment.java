@@ -48,7 +48,7 @@ public class HangulFragment extends Fragment {
     private int id = 1;
     private int blackBlockSize = 100; //글자 사이즈
     private int clearBlockSize = 200; //가이드라인 사이즈
-    private int backgroundSize = 10;
+    private int backgroundSize = 8;
     ArrayList<View> GuideLine = new ArrayList<View>();
     ArrayList<Integer> CheckIDList = new ArrayList<Integer>();  //한 획을 그리면서 지나간 view들의 id를 담는 ArrayList
 
@@ -93,7 +93,7 @@ public class HangulFragment extends Fragment {
 
         hangulVO = gson.fromJson(getArguments().getString("hangulinfo"),HangulVO.class);
         lastSL = new ScalableLayout(getActivity(),backgroundSize*100,backgroundSize*100);
-        MakeWord(wordJsonArr.get(wordCount).getAsJsonArray());
+        MakeWord((JsonArray) hangulVO.getWord().get(wordCount));
         parentLayout.addView(lastSL);
         return view;
     }
@@ -224,7 +224,7 @@ public class HangulFragment extends Fragment {
         Log.d("index",String.valueOf(hangulVO.getStroke().get(wordCount).length()));
 
         if(index != strokeArr.length){
-            PaintGuideLine(wordJsonArr.get(wordCount).getAsJsonArray(),word);
+            PaintGuideLine((JsonArray) hangulVO.getWord().get(wordCount),word);
         }else{
             if(wordCount != hangulVO.getWord().size()-1){ //한글자의 마지막 획수까지 완성시킨경우
                 index = 0;
